@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#294735">
+<link rel="manifest" href="manifest.json">
+<title>Meu Treino</title>
+<style>
+:root{--green:#294735;--mint:#e8f1e9;--bg:#f5f7f5;--ink:#202b24;--muted:#68766d;--line:#e1e7e2}
+*{box-sizing:border-box}body{margin:0;font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:env(safe-area-inset-bottom)}
+header{background:var(--green);color:white;padding:20px 17px 17px;position:sticky;top:0;z-index:2;box-shadow:0 3px 12px #0001}
+h1{font-size:22px;margin:0}header p{font-size:13px;margin:5px 0 0;color:#d8e5db}
+nav{display:flex;gap:7px;overflow:auto;background:#fff;padding:10px;position:sticky;top:74px;z-index:2}
+nav button{border:0;border-radius:12px;background:#eaf0eb;padding:10px 13px;font-weight:750;white-space:nowrap;color:#4b5c50}
+nav button.active{background:var(--green);color:white}
+main{max-width:760px;margin:auto;padding:14px}
+h2{font-size:20px;margin:3px 0} .sub{color:var(--muted);font-size:13px;margin:4px 0 12px}
+.panel,.exercise,.history{background:white;border:1px solid var(--line);border-radius:15px;padding:13px;margin:10px 0}
+.progressrow{display:flex;justify-content:space-between;font-weight:700;font-size:13px}
+.progress{height:8px;background:#e5e9e6;border-radius:99px;overflow:hidden;margin-top:8px}.fill{height:100%;background:#579466;width:0;transition:.2s}
+.exhead{display:flex;gap:10px;align-items:flex-start}.exnum{background:var(--mint);color:var(--green);font-weight:800;border-radius:9px;padding:6px 9px}
+.exname{font-weight:800;font-size:16px}.meta{color:#45644d;font-weight:700;font-size:13px;margin-top:4px}.note{font-size:13px;color:var(--muted);line-height:1.5;margin:8px 0}
+.checks{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.check{display:flex;align-items:center;gap:5px;background:#f0f4f1;padding:7px 9px;border-radius:9px;font-size:12px}.check input{accent-color:var(--green);width:18px;height:18px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fields label{font-size:12px;color:var(--muted)}.fields input{width:100%;padding:9px;border:1px solid #d5ddd7;border-radius:9px;margin-top:4px;font-size:15px}
+a.video{display:inline-block;margin-top:10px;color:#1265c2;font-size:13px;font-weight:700;text-decoration:none}
+button.action{border:0;border-radius:11px;padding:11px 13px;font-weight:750;background:var(--green);color:white}
+button.secondary{background:#e7ece8;color:#34483a}button.danger{background:#fae8e5;color:#8b3027}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.tip{background:var(--mint);border-radius:12px;padding:12px;font-size:13px;line-height:1.5}
+.history h3{margin:0 0 8px;font-size:16px}.historyItem{border-top:1px solid var(--line);padding:9px 0;font-size:13px}
+small{color:var(--muted)}.hide{display:none}
+footer{max-width:760px;margin:auto;padding:5px 16px 20px;color:var(--muted);font-size:12px;line-height:1.5}
+</style>
+</head>
+<body>
+<header><h1>🏋️ Meu Treino</h1><p>Hipertrofia de inferiores • 2 dias superiores • 5 dias/semana</p></header>
+<nav id="days"></nav>
+<main>
+<div id="routine"></div>
+<div class="actions">
+<button class="action" id="complete">✓ Registrar treino concluído</button>
+<button class="action secondary" id="resetDay">↺ Limpar marcações do dia</button>
+</div>
+<section class="history panel"><h3>📈 Histórico de treinos</h3><div id="historyList"></div>
+<div class="actions"><button class="action secondary" id="export">Exportar backup</button><label class="action secondary" style="display:inline-block;cursor:pointer">Importar backup<input id="import" type="file" accept=".json" hidden></label><button class="action danger" id="clearHistory">Apagar histórico</button></div></section>
+<div class="tip"><b>Cuidados articulares:</b> mantenha amplitude confortável. Com osteoartrose no quadril e histórico de fratura de patela, evite forçar abertura/profundidade ou movimentos que provoquem dor crescente, pontada, travamento ou instabilidade. Se sintomas piorarem e persistirem, adapte e procure profissional que conheça suas condições.</div>
+</main>
+<footer>Os dados ficam armazenados neste aparelho/navegador. Exporte um backup periodicamente para não perder o histórico se trocar de aparelho ou limpar os dados do navegador. Vídeos abrem pesquisas no YouTube.</footer>
+<script>
+const workouts=[
+{day:"Segunda",name:"Inferiores A",focus:"Quadríceps + glúteos",items:[
+["Leg press 45°","4 × 10–12","Amplitude confortável; não aproximar excessivamente os joelhos do peito."],
+["Cadeira extensora","3 × 12–15","Movimento controlado, sem forçar extensão dolorosa."],
+["Hip thrust","4 × 8–12","Contraia glúteos no topo, sem hiperestender a lombar."],
+["Cadeira abdutora","3 × 15–20","Amplitude confortável para o quadril."],
+["Panturrilha","3 × 12–15","Controle a execução."]
+]},
+{day:"Terça",name:"Superiores A",focus:"Costas + ombros + bíceps",items:[
+["Puxada alta na frente","4 × 10–12","Puxe em direção ao peito sem balançar o tronco."],
+["Remada baixa","3 × 10–12","Postura estável; controle o retorno."],
+["Elevação lateral","3 × 12–15","Evite encolher os ombros."],
+["Crucifixo inverso","3 × 12–15","Foco na parte posterior dos ombros."],
+["Rosca bíceps com halteres","3 × 10–12","Evite balanço do corpo."],
+["Tríceps corda","3 × 12–15","Cotovelos estáveis junto ao corpo."]
+]},
+{day:"Quarta",name:"Inferiores B",focus:"Posteriores + glúteos",items:[
+["Stiff com halteres","4 × 8–12","Quadril para trás, coluna neutra e amplitude confortável."],
+["Mesa flexora sentada","4 × 10–12","Controle a volta."],
+["Glúteo no cabo (coice)","3 × 12–15 por perna","Não arqueie a lombar nem gire o quadril."],
+["Extensão de quadril no banco 45°","3 × 12–15","Foco no glúteo, sem hiperextender a lombar."],
+["Cadeira abdutora","3 × 15–20","Evite abertura excessiva que cause desconforto."]
+]},
+{day:"Quinta",name:"Superiores B",focus:"Peito + costas + braços + abdômen",items:[
+["Supino máquina","3 × 10–12","Movimento controlado."],
+["Supino inclinado com halteres","3 × 10–12","Carga que permita boa técnica."],
+["Remada articulada","3 × 10–12","Evite encolher os ombros."],
+["Elevação lateral","3 × 12–15","Sem impulso."],
+["Rosca bíceps no cabo","3 × 12","Controle o movimento."],
+["Tríceps no cabo","3 × 12–15","Cotovelos estáveis."],
+["Dead bug","3 × 10 por lado","Lombar controlada, movimento lento."],
+["Pallof press","3 × 12 por lado","Resista à rotação do tronco."]
+]},
+{day:"Sexta",name:"Inferiores C",focus:"Glúteos + quadríceps + posterior",items:[
+["Agachamento sumô com halter","3 × 10–12","Pés afastados confortavelmente; não force abertura ou profundidade. Joelhos alinhados aos pés."],
+["Ponte de glúteos com carga (Glute Bridge)","4 × 10–12","Deitada no chão, halter/anilha sobre o quadril; pausa de 1–2 s contraindo glúteos."],
+["Leg press horizontal","3 × 12–15","Amplitude moderada; mantenha quadril apoiado."],
+["Mesa flexora deitada","3 × 12–15","Controle a fase de retorno."],
+["Abdução de quadril no cabo","3 × 12–15 por perna","Sem inclinar ou girar o tronco."],
+["Panturrilha sentada","3 × 15–20","Pausa breve na contração."]
+]}
+];
+const STORAGE="meutreino_data_v1";
+let data=JSON.parse(localStorage.getItem(STORAGE)||'{"checks":{},"loads":{},"history":[]}');
+let selected=0;
+function save(){localStorage.setItem(STORAGE,JSON.stringify(data))}
+function key(d,i){return d+"_"+i}
+function setsFrom(rep){return parseInt(rep)||3}
+function render(){
+document.querySelector("#days").innerHTML=workouts.map((w,i)=>`<button class="${i===selected?'active':''}" data-day="${i}">${w.day}</button>`).join("");
+document.querySelectorAll("#days button").forEach(b=>b.onclick=()=>{selected=+b.dataset.day;render()});
+let w=workouts[selected],total=0,done=0;
+let cards=w.items.map((e,i)=>{
+let k=key(selected,i),n=setsFrom(e[1]),checks=data.checks[k]||[],load=data.loads[k]||{};
+total+=n;done+=checks.filter(Boolean).length;
+return `<article class="exercise">
+<div class="exhead"><span class="exnum">${i+1}</span><div><div class="exname">${e[0]}</div><div class="meta">${e[1]}</div></div></div>
+<div class="note">${e[2]}</div>
+<div class="checks">${Array.from({length:n},(_,s)=>`<label class="check"><input type="checkbox" data-k="${k}" data-s="${s}" ${checks[s]?'checked':''}>Série ${s+1}</label>`).join("")}</div>
+<div class="fields"><label>Carga usada<input type="text" placeholder="Ex.: 25 kg" data-load="${k}" value="${load.weight||""}"></label><label>Repetições realizadas<input type="text" placeholder="Ex.: 12, 11, 10" data-rep="${k}" value="${load.reps||""}"></label></div>
+<a class="video" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${encodeURIComponent(e[0]+" execução correta musculação")}">▶ Vídeo demonstrativo</a>
+</article>`;
+}).join("");
+let percent=total?Math.round(done/total*100):0;
+document.querySelector("#routine").innerHTML=`<h2>${w.name}</h2><div class="sub">${w.focus}</div><div class="panel"><div class="progressrow"><span>Progresso</span><span>${percent}% (${done}/${total} séries)</span></div><div class="progress"><div class="fill" style="width:${percent}%"></div></div></div>${cards}`;
+document.querySelectorAll("[data-k][data-s]").forEach(el=>el.onchange=()=>{let k=el.dataset.k,s=+el.dataset.s;data.checks[k]=data.checks[k]||[];data.checks[k][s]=el.checked;save();render()});
+document.querySelectorAll("[data-load]").forEach(el=>el.onchange=()=>{data.loads[el.dataset.load]=data.loads[el.dataset.load]||{};data.loads[el.dataset.load].weight=el.value;save()});
+document.querySelectorAll("[data-rep]").forEach(el=>el.onchange=()=>{data.loads[el.dataset.rep]=data.loads[el.dataset.rep]||{};data.loads[el.dataset.rep].reps=el.value;save()});
+renderHistory();
+}
+function renderHistory(){
+let h=data.history.slice().reverse().slice(0,15);
+document.querySelector("#historyList").innerHTML=h.length?h.map(x=>`<div class="historyItem"><b>${x.date}</b> — ${x.day}: ${x.title}<br><small>${x.completed}/${x.total} séries concluídas</small></div>`).join(""):"<small>Seus treinos concluídos aparecerão aqui.</small>";
+}
+document.querySelector("#complete").onclick=()=>{
+let w=workouts[selected],done=0,total=0;
+w.items.forEach((e,i)=>{let n=setsFrom(e[1]),c=data.checks[key(selected,i)]||[];total+=n;done+=c.filter(Boolean).length});
+data.history.push({date:new Date().toLocaleDateString("pt-BR"),day:w.day,title:w.name,completed:done,total});
+save();renderHistory();alert("Registro salvo no histórico! Você marcou "+done+" de "+total+" séries.");
+};
+document.querySelector("#resetDay").onclick=()=>{if(confirm("Limpar as marcações deste dia? Os registros de carga/repetições e histórico serão preservados.")){workouts[selected].items.forEach((e,i)=>delete data.checks[key(selected,i)]);save();render()}};
+document.querySelector("#clearHistory").onclick=()=>{if(confirm("Apagar todo o histórico de treinos? Esta ação não pode ser desfeita.")){data.history=[];save();renderHistory()}};
+document.querySelector("#export").onclick=()=>{let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="backup-meu-treino.json";a.click();URL.revokeObjectURL(a.href)};
+document.querySelector("#import").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let imported=JSON.parse(await f.text());if(imported.history&&imported.checks){data=imported;save();render();alert("Backup restaurado!")}else alert("Arquivo de backup inválido.")}catch{alert("Não foi possível ler o backup.")}};
+render();
+if("serviceWorker" in navigator && location.protocol!=="file:")navigator.serviceWorker.register("./sw.js").catch(()=>{});
+</script>
+</body>
+</html>
